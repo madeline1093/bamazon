@@ -9,58 +9,54 @@ let connection = mysql.createConnection({
     password: 'root',
     database: "bamazon",
 });
-
-connection.connect(function(err){
-    if (err){
-        console.error('error connecting: ' +err.stack);
+// test connection
+connection.connect(function(err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
     }
     loadProducts();
-    //console.log(connection.threadId);
-})
+});
 
 function loadProducts() {
     let query = 'SELECT * FROM products';
     connection.query(query, function(err, res) {
+        if (err) throw (err);
+        // show the products
         console.table(res);
-        promptCustomerForItems(res);
+
+        // prompt customer for product
+        promptCustomerForItem(res);
     });
 }
 
-function promptCustomerForItems(inventory){
-    inquirer.prompt([{
-        type: 'input',
-        name: 'choice',
-        message: "Waht is the ID of the item you would like to purchase?",
-    }]).then(function(val) {
-        let choiceID = parseInt(val.choice);
-        //query products to make sure there is enough in stock
-        let product = checkInventory(choiceID, inventory);
+function promptCustomerForItem(inventory) {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'choice',
+            message: 'What is the ID of the item you would like to purchase?',
+        }
+    ]).then(function(val) {
+        let choiceId = parseInt(val.choice);
+        // query products to see if have enough
+        let product = checkInventory(choiceId, inventory);
         if (product) {
             promptCustomerForQuantity(product);
         } else {
-            console.log("That item is out of stock!");
+            console.log('That item is not in our inventory');
             loadProducts();
         }
     });
-};
-
-function checkInventory(choiceID, inventory) {
-    for (let i = 0; i < inventory.length; i++) {
-        if (inventory[i].item_id === choiceID) {
-            //you have that item in your database
-            return inventory[i];
-        }
-        return null;
-    }
 }
 
-function promptCustomerForQuantity(){
+function promptCustomerForQuantity(product) {
     inquirer.prompt([{
-        //promt for quantity
-    }]).then(function(val){
+        // prompt for quanty
+    }]).then(function(val) {
         let quantity = parseInt(val.quantity);
         if (quantity > product.stock_quantity) {
-            console.log("Not enough in stock")
+            console.log('not enough');
+            loadProducts();
         } else {
             makePurchase(product, quantity);
         }
@@ -69,11 +65,23 @@ function promptCustomerForQuantity(){
 
 function makePurchase(product, quantity) {
     connection.query(
-        //update datatbase
-        "UPDATE products SET stock_quantity - ? WHERE item_id = ?",
+
+        'UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?',
         [quantity, product.item_id],
         function(err, res) {
-
+            if (err) throw (err);
+            console.log(success);
+            loadProduct();
         }
+
     )
+}
+
+function checkInventory(choiceId, inventory) {
+    for(var i=0; i < inventory.length; i++) {
+        if (inventory[i].item_id === choiceId) {
+            return inventory[i];
+        }
+    }
+    return null;
 }
