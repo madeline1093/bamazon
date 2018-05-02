@@ -37,10 +37,12 @@ function promptCustomerForItem(inventory) {
             message: 'What is the ID of the item you would like to purchase?',
         }
     ]).then(function(val) {
+        //console.log('hello');
         let choiceId = parseInt(val.choice);
         // query products to see if have enough
         let product = checkInventory(choiceId, inventory);
         if (product) {
+            //console.log("hello");
             promptCustomerForQuantity(product);
         } else {
             console.log('That item is not in our inventory');
@@ -50,14 +52,19 @@ function promptCustomerForItem(inventory) {
 }
 
 function promptCustomerForQuantity(product) {
-    inquirer.prompt([{
-        // prompt for quanty
-    }]).then(function(val) {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'quantity',
+            message: 'How many would you like of that product?',
+        }
+    ]).then(function(val) {
         let quantity = parseInt(val.quantity);
         if (quantity > product.stock_quantity) {
             console.log('not enough');
             loadProducts();
         } else {
+            console.log('great, lets box this up!');
             makePurchase(product, quantity);
         }
     })
@@ -70,8 +77,8 @@ function makePurchase(product, quantity) {
         [quantity, product.item_id],
         function(err, res) {
             if (err) throw (err);
-            console.log(success);
-            loadProduct();
+            console.log('success');
+            loadProducts();
         }
 
     )
