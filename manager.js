@@ -81,7 +81,7 @@ function viewLowInventory() {
         console.table(res); 
 
     });
-    menuChoice();
+    displayMenu();
 }
 
 function addInventory(){
@@ -116,14 +116,15 @@ function addInventory(){
 				addInventory();
             } else {
                 let productData = res[0];
-
+                console.log(productData.stock_quantity);
                 console.log("adding new inventory");
                 
                 let newQuery = "UPDATE products SET stock_quantity = " + (productData.stock_quantity + itemNum) + " WHERE item_id = " + choiceID;
-
+                let newTotal = (productData.stock_quantity + itemNum);
                 connection.query(newQuery, function(err, res) {
                     if (err) throw (err);
-                    console.log('Stock for item ' + choiceID + " has been updated to " + productData.stock_quantity + itemNum + ".");
+                    console.log('Stock for item ' + choiceID + " has been updated to " + (newTotal) + ".");
+                    displayMenu();
 				});
 			};
 		});
